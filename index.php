@@ -51,7 +51,7 @@
         if ($http_code === 200) {
             $dados_os = json_decode($response_field, true);
             $id_cliente = $dados_os['customer']['id'] ?? null;
-            $id_servico = $dados_os['services']['id'] ?? null;
+            $id_servico = $dados_os['service']['id'] ?? null;
             
             if (!$id_cliente) {
                 http_response_code(400);
@@ -115,15 +115,9 @@
             // Monta no padrão 55XXXXXXXXXX
             $telefone_whatsapp = "55" . $telefone_limio;
             
-            $texto_mensagem = "
-                Olá, *" . $nome_formatado . "*! Sua ordem de serviço foi concluída com sucesso e *sua opinião é muito importante para nós*! \n \n
+            $texto_mensagem = "Olá, *" . $nome_formatado . "*! Sua ordem de serviço foi concluída com sucesso e *sua opinião é muito importante para nós*!
 
-                https://forms.gle/QYiLTVb3q9yHCJ4T6   
-
-                \n \n 
-
-                ```Mensagem automatica gerada pelo bot MTM```
-            ";
+https://forms.gle/QYiLTVb3q9yHCJ4T6";
 
             //envio de mensagem para o cliente
             $payload_node = [
@@ -131,21 +125,22 @@
                 "message" => $texto_mensagem
             ];
 
-            //serviços permitidos
-            $servicos_permitidos = [
-                "MjY0MTc6MTkxODc=", 
-                "Mjg0NzA6MTkxODc=", 
-                "MjYxMTk6MTkxODc=", 
-                "MjYxMjE6MTkxODc=", 
-                "MjU2MDk6MTkxODc=", 
-                "NTA0NTc3OjE5MTg3", 
-                "MzYyNjQ4OjE5MTg3", 
-                "MTQ1MTY3OjE5MTg3", 
-                "OTYzNjg6MTkxODc="
-            ];
+            
+                
+            
 
-            if(in_array($id_servico, $servicos_permitidos)){
-                 $ch_node = curl_init($url_meu_node);
+            if (
+                $id_servico === 'MjY0MTc6MTkxODc=' ||
+                $id_servico === 'Mjg0NzA6MTkxODc=' ||
+                $id_servico === 'MjYxMTk6MTkxODc=' ||
+                $id_servico === 'MjYxMjE6MTkxODc=' ||
+                $id_servico === 'MjU2MDk6MTkxODc=' ||
+                $id_servico === 'NTA0NTc3OjE5MTg3' ||
+                $id_servico === 'MzYyNjQ4OjE5MTg3' ||
+                $id_servico === 'MTQ1MTY3OjE5MTg3' ||
+                $id_servico === 'OTYzNjg6MTkxODc='
+            ) {
+                $ch_node = curl_init($url_meu_node);
                 curl_setopt($ch_node, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch_node, CURLOPT_POST, true);
                 curl_setopt($ch_node, CURLOPT_POSTFIELDS, json_encode($payload_node));
@@ -168,6 +163,15 @@
                     ],
                     "resposta_do_servidor_node" => json_decode($response_node, true) ?? $response_node
                 ], JSON_UNESCAPED_UNICODE);
+                exit();
+            }else{
+                //mostra erro retornado
+                http_response_code(401);
+                echo json_encode([
+                    "status" => "error", 
+                    "message" => "ID de serviço não autorizado.",
+                    "id" => "ID do servico: " . $id_servico
+                ]);
                 exit();
             }
 
